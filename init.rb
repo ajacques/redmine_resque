@@ -1,6 +1,12 @@
 require 'redmine'
 
-Resque.redis.namespace = "#{Rails.application.class.parent_name.downcase}_#{Rails.env}"
+rails_root = File.dirname(__FILE__)
+
+rails_env = ENV['RAILS_ENV'] || 'development'
+
+resque_config = YAML.load_file(rails_root + '/config/resque.yml')[rails_env].symbolize_keys
+Resque.redis = Redis.new(resque_config)
+Resque.redis.namespace = resque_config[:namespace]
 
 ActionDispatch::Callbacks.to_prepare do
   require 'redmine_resque'
